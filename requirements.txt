@@ -71,6 +71,7 @@ Pygments==2.19.1
 pyparsing==3.2.1
 PySocks==1.7.1
 python-dateutil==2.9.0.post0
+python==3.9.13
 pytz==2025.1
 PyYAML==6.0.2
 regex==2024.11.6
