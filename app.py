@@ -17,15 +17,23 @@ from collections import Counter
 
 app = Flask(__name__)
 
-# Google Drive model download setup
+file_ids = {
+    "tf_model.h5": "1-9Ie7NqGnMDCQD2PrTdgmaY0HEbxSROl",
+    "tf_model.preproc": "1-AVaLocYCUZLujYA4pAWcZp_TpFt20y7",
+    "vocab.txt" : "1-N6Ck0PS9dXSrxojF9IpKhy7SNboX0f2",
+    "tokenizer.json": "1-JqEsyNsCPDGlK-W9n1tV76aTpHbcj3u",
+    "tokenizer_config.json": "1-ZfE8tRXsBQfTOXxqDMxWKpXWF3YKs3r",
+    "special_tokens_map.json": "1-NqlVZnpIju3FlYh8HSDnRaM2ZbrV0PQ",
+    "config.json": "1--WQAmROfPZF22EyU3B2GWBpFb-iijyB"
+}
 MODEL_PATH = "dummy_sentiment_model"
-GDRIVE_FILE_ID = "1-9Ie7NqGnMDCQD2PrTdgmaY0HEbxSROl"  # Replace with actual file ID
 
-# Check if model exists, otherwise download it
-if not os.path.exists(MODEL_PATH):
-    print("Downloading sentiment model from Google Drive...")
-    os.makedirs("models", exist_ok=True)
-    gdown.download(f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}", MODEL_PATH, quiet=False)
+# Download each file
+for filename, file_id in file_ids.items():
+    output_path = os.path.join(MODEL_PATH, filename)
+    gdown.download(f"https://drive.google.com/uc?id={file_id}", output_path, quiet=False)
+
+print("Model files downloaded!")
 
 # Load pre-trained sentiment model
 model = ktrain.load_predictor(MODEL_PATH)
