@@ -1,5 +1,7 @@
 import os
 os.environ['TF_USE_LEGACY_KERAS'] = "True"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "dummy_sentiment_model")
 
 import re
 import praw
@@ -26,7 +28,7 @@ file_ids = {
     "special_tokens_map.json": "1-NqlVZnpIju3FlYh8HSDnRaM2ZbrV0PQ",
     "config.json": "1--WQAmROfPZF22EyU3B2GWBpFb-iijyB"
 }
-MODEL_PATH = "dummy_sentiment_model"
+# MODEL_PATH = "dummy_sentiment_model"
 
 # Download each file
 for filename, file_id in file_ids.items():
