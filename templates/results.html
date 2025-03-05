@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}Results{% endblock %}
+
+{% block content %}
+
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJv+1wg2g7f27jJvwwqQ2FqNKtcD3ws5LFTwS5IuFUbbFO9gyb3bd4yXkZZ2" crossorigin="anonymous">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .container {
+            margin-top: 20px;
+        }
+        .sentiment-label {
+            font-weight: bold;
+        }
+        .result-item {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .chart-container {
+            margin-top: 20px;
+        }
+    </style>
+
+<div class="container py-5">
+    <div class="search-wrapper">
+        <div class="search-box">
+            <input type="text" class="search-input form-control" placeholder="Type the name of your Candidate..." id="searchInput">
+            <i class="fas fa-search search-icon" id="searchBtn"></i>
+
+            <div class="suggestions" id="suggestionsBox">
+                <div class="recent-searches">Recent Searches</div>
+                <div id="recentSearchesList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <h1 class="mt-5">Sentiment Analysis Results for "{{ keyword }}"</h1>
+        <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            Sentiment predictions are results from trained ML model and may not always be accurate. Please interpret results with discretion.
+            <button type="button" class="btn-close" data-mdb-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        <!-- MDB Bootstrap -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.js"></script>
+        
+        <!-- Search Section -->
+
+
+        <!-- Row for Two Columns Layout -->
+        <div class="row mt-4">
+
+            <!-- Sentiment Pie Chart Card -->
+            <div class="col-md-6">
+                <div class="card chart-card">
+                    <div class="card-header">
+                        Sentiment Distribution
+                    </div>
+                    <div class="card-body">
+                        <canvas id="sentimentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Word Frequency Bar Chart Card -->
+            <div class="col-md-6">
+                <div class="card chart-card">
+                    <div class="card-header">
+                        Word Frequency
+                    </div>
+                    <div class="card-body">
+                        <canvas id="wordFrequencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+           
+              
+        </div> <!-- End Row -->
+         <!-- Sentiment Trigram Cards -->
+         <div class="row mt-4">
+            {% for sentiment, trigrams in top_trigrams.items() %}
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <span class="badge 
+                                    {% if sentiment == 0 %} bg-secondary {% elif sentiment == 1 %} bg-danger 
+                                    {% elif sentiment == 2 %} bg-success {% elif sentiment == 3 %} bg-primary {% endif %}">
+                                    {% if sentiment == 0 %} Neutral {% elif sentiment == 1 %} Negative 
+                                    {% elif sentiment == 2 %} Positive {% elif sentiment == 3 %} Mixed {% endif %}
+                                </span>
+                            </h5>
+                            <div class="mt-3">
+                                {% for trigram, count in trigrams %}
+                                    <span class="badge bg-info text-light me-1">
+                                        {{ trigram | join(" ") }} ({{ count }})
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <!-- Collected Data Results -->
+ <!-- Download CSV Button -->
+
+        <div class="container mt-4">
+            <h2>Collected Data</h2>
+            <p>Total Data Collected: <span id="totalCount"></span></p>
+            <div class="d-flex justify-content-end mb-3">
+                <!-- Download CSV Button -->
+                <button id="downloadCSV" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Download as CSV
+                </button>
+                
+                <script>
+                    document.getElementById("downloadCSV").addEventListener("click", function () {
+                        const results = {{ results | tojson }};
+                        if (!results.length) {
+                            alert("No data available.");
+                            return;
+                        }
+                
+                        let csvContent = "data:text/csv;charset=utf-8,Text,Sentiment\n";
+                        results.forEach(row => {
+                            let text = row.text.replace(/"/g, '""');  // Escape quotes
+                            csvContent += `"${text}",${row.sentiment}\n`;
+                        });
+                
+                        const encodedUri = encodeURI(csvContent);
+                        const link = document.createElement("a");
+                        link.setAttribute("href", encodedUri);
+                        link.setAttribute("download", "sentiment_data.csv");
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    });
+                </script>
+                
+
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Text</th>
+                            <th>Sentiment</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTable">
+                        <!-- Table rows will be inserted here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        
+            <!-- Pagination Controls -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" id="prevPage">
+                        <a class="page-link" href="#" onclick="changePage(-1); return false;">Previous</a>
+                    </li>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" id="pageNumber">1</a>
+                    </li>
+                    <li class="page-item" id="nextPage">
+                        <a class="page-link" href="#" onclick="changePage(1); return false;">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+    </div> <!-- End Container -->
+
+    <!-- Bootstrap and Chart.js Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz4fnFO9gyb3I9nN0w6O2l9yyzP+z6VJhb6fT4skQk6M84lVc0zPe1f2c9" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js" integrity="sha384-pzjw8f+ua7Kw1TIq0wJl+H0v2rW0yoPDoBoSazBZZRc7to6W8fPfrtI72vcQfFiN" crossorigin="anonymous"></script>
+
+    <script>
+
+        
+          const sentimentCounts = {{ sentiment_counts | tojson }};
+        
+        const sentimentLabels = ["Neutral", "Negative", "Positive", "Mixed"];
+        const sentimentDataValues = [
+            sentimentCounts[0] || 0, // Neutral
+            sentimentCounts[1] || 0, // Negative
+            sentimentCounts[2] || 0, // Positive
+            sentimentCounts[3] || 0  // Mixed
+        ];
+
+        // Colors: Neutral (Blue), Negative (Red), Positive (Green), Mixed (Gray)
+        const sentimentColors = ["#007bff", "#ff6384", "#4bc0c0", "#6c757d"];
+        const sentimentHoverColors = ["#66b0ff", "#ff8099", "#74d4d4", "#95a5a6"];
+
+        // Get the canvas context
+        const chartElement = document.getElementById("sentimentChart");
+        if (chartElement) {
+            const ctx = chartElement.getContext("2d");
+            new Chart(ctx, {
+                type: "pie",
+                data: {
+                    labels: sentimentLabels,
+                    datasets: [{
+                        label: "Sentiment Distribution",
+                        data: sentimentDataValues,
+                        backgroundColor: sentimentColors,
+                        hoverBackgroundColor: sentimentHoverColors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "top",
+                            labels: {
+                                font: {
+                                    size: 14
+                                },
+                                color: "#333"
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (tooltipItem) {
+                                    let label = sentimentLabels[tooltipItem.dataIndex] || "";
+                                    let value = sentimentDataValues[tooltipItem.dataIndex] || 0;
+                                    return `${label}: ${value} occurrences`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Word Frequency Bar Chart
+        const wordFrequencyCtx = document.getElementById('wordFrequencyChart').getContext('2d');
+        const wordFrequencies = {{ word_frequencies | tojson }};
+
+        const wordFrequencyLabels = Object.keys(wordFrequencies);
+        const wordFrequencyData = Object.values(wordFrequencies);
+
+        const wordFrequencyChart = new Chart(wordFrequencyCtx, {
+            type: 'bar',
+            data: {
+                labels: wordFrequencyLabels,
+                datasets: [{
+                    label: 'Word Frequency',
+                    data: wordFrequencyData,
+                    backgroundColor: '#007bff',
+                    borderColor: '#0056b3',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+    let results = {{ results|tojson }};
+    let currentPage = 1;
+    const rowsPerPage = 5;
+
+    function displayTableData() {
+        let startIndex = (currentPage - 1) * rowsPerPage;
+        let endIndex = startIndex + rowsPerPage;
+        let paginatedResults = results.slice(startIndex, endIndex);
+
+        let tableBody = document.getElementById("dataTable");
+        tableBody.innerHTML = "";
+
+        paginatedResults.forEach((result, index) => {
+            let sentimentBadge = "";
+            if (result.sentiment === 1) {
+                sentimentBadge = '<span class="badge bg-danger">Neutral</span>';
+            } else if (result.sentiment === 0) {
+                sentimentBadge = '<span class="badge bg-info">Neutral</span>';
+            } else if (result.sentiment === 2) {
+                sentimentBadge = '<span class="badge bg-success">Positive</span>';
+            } else {
+                sentimentBadge = '<span class="badge bg-secondary">Mixed</span>';
+            }
+
+            let row = `
+                <tr>
+                    <td>${startIndex + index + 1}</td>
+                    <td>${result.text}</td>
+                    <td>${sentimentBadge}</td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+
+        // Update total count
+        document.getElementById("totalCount").innerText = results.length;
+
+        // Update page number
+        document.getElementById("pageNumber").innerText = currentPage;
+
+        // Enable/Disable pagination buttons
+        document.getElementById("prevPage").classList.toggle("disabled", currentPage === 1);
+        document.getElementById("nextPage").classList.toggle("disabled", endIndex >= results.length);
+    }
+
+    function changePage(direction) {
+        let newPage = currentPage + direction;
+        let maxPages = Math.ceil(results.length / rowsPerPage);
+
+        if (newPage > 0 && newPage <= maxPages) {
+            currentPage = newPage;
+            displayTableData();
+        }
+    }
+
+    // Initial table load
+    displayTableData();
+    </script>
+{% endblock %}

@@ -1,100 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis Web App</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Import Chart.js -->
-</head>
-<body>
-    <h1>Sentiment Analysis of Reddit and Google News Data</h1>
-    <form method="post">
-        <label for="keyword">Enter a keyword:</label>
-        <input type="text" id="keyword" name="keyword" required>
-        <button type="submit">Search</button>
-    </form>
+{% extends "base.html" %}
 
-    {% if keyword %}
-        <h2>Results for "{{ keyword }}"</h2>
-        
-        <!-- Table displaying each text and its sentiment -->
-        <table border="1">
-            <tr>
-                <th>Text</th>
-                <th>Sentiment</th>
-            </tr>
-            {% for result in results %}
-            <tr>
-                <td>{{ result.text }}</td>
-                <td>{{ result.sentiment }}</td>
-            </tr>
-            {% endfor %}
-        </table>
+{% block title %}SentiFil-Poll{% endblock %}
 
-        <!-- Pie chart for sentiment distribution -->
-        <h3>Sentiment Distribution</h3>
-        <canvas id="sentimentChart" width="400" height="400"></canvas>
-        
-        <!-- Bar chart for most frequent words -->
-        <h3>Most Frequent Words</h3>
-        <canvas id="wordChart" width="400" height="400"></canvas>
-    {% endif %}
+{% block content %}
+<!-- Hero Section -->
+<header class="bg-primary text-white py-5">
+    <div class="container text-center">
+        <h1>What Filipinos think of your Candidate?</h1>
+        <p class="lead">Based on PH Subreddits and Google News Sentiments.</p>
+    </div>
+</header>
 
-    <script>
-        {% if keyword %}
-        // Data for the sentiment pie chart
-        const sentimentData = {{ sentiment_counts | tojson }};
-        const sentimentLabels = Object.keys(sentimentData);
-        const sentimentValues = Object.values(sentimentData);
+<!-- Search Section -->
+<div class="container py-5">
+    <div class="search-wrapper">
+        <div class="search-box">
+            <input type="text" class="search-input form-control" placeholder="Type the name of your Candidate..." id="searchInput">
+            <i class="fas fa-search search-icon" id="searchBtn"></i>
 
-        const ctxSentiment = document.getElementById('sentimentChart').getContext('2d');
-        const sentimentChart = new Chart(ctxSentiment, {
-            type: 'pie',
-            data: {
-                labels: sentimentLabels,
-                datasets: [{
-                    label: 'Sentiment Distribution',
-                    data: sentimentValues,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'], // Add more colors as needed
-                }]
-            }
-        });
+            <div class="suggestions" id="suggestionsBox">
+                <div class="recent-searches">Recent Searches</div>
+                <div id="recentSearchesList"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        // Data for the word frequency bar chart
-        const wordData = {{ word_frequencies | tojson }};
-        const wordLabels = Object.keys(wordData);
-        const wordValues = Object.values(wordData);
-
-        const ctxWords = document.getElementById('wordChart').getContext('2d');
-        const wordChart = new Chart(ctxWords, {
-            type: 'bar',
-            data: {
-                labels: wordLabels,
-                datasets: [{
-                    label: 'Word Frequency',
-                    data: wordValues,
-                    backgroundColor: '#36A2EB'
-                }]
-            },
-            options: {
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Words'
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Frequency'
-                        },
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-        {% endif %}
-    </script>
-</body>
-</html>
+{% endblock %}
