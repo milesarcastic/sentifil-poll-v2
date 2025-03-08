@@ -100,8 +100,5 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     // Load recent searches on page load
-    loadRecentSearches();
-
-
-    
+    loadRecentSearches();    
 });
