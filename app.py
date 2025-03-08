@@ -39,10 +39,10 @@ file_ids = {
 MODEL_PATH = "dummy_sentiment_model"
 RESULTS_FILE = "results.json"
 
-# # Download each file
-# for filename, file_id in file_ids.items():
-#     output_path = os.path.join(MODEL_PATH, filename)
-#     gdown.download(f"https://drive.google.com/uc?id={file_id}", output_path, quiet=False)
+# Download each file
+for filename, file_id in file_ids.items():
+    output_path = os.path.join(MODEL_PATH, filename)
+    gdown.download(f"https://drive.google.com/uc?id={file_id}", output_path, quiet=False)
 
 print("Model files downloaded!")
 
@@ -169,4 +169,4 @@ def download_csv():
 
     return response
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run()
