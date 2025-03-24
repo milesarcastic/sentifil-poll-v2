@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}About - SentiFil-Poll{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 fw-bold text-center">About</h1>
+    <p class="lead text-center">
+        SentiFil-Poll is a sentiment analysis tool designed to classify political sentiments from Reddit and Google News using Natural Language Processing (NLP).
+    </p>
+
+    <div class="row mt-5 align-items-center">
+        <div class="col-md-6">
+            <h3 class="fw-semibold">Data</h3>
+            <p style="text-align: justify">
+                A total of 3,070 posts were collected, with 2,526 from Reddit and 544 from Google News. After removing 11 duplicate entries, the final dataset contained 3,059 rows. 
+                <br><br> During preprocessing, common English, Cebuano, and Filipino stopwords were removed, except for selected words like "kailangan", "kulang", "kapwa", "gusto", and "bababa" 
+                which were retained due to their contextual significance. Emojis were removed for text uniformity. 
+                <br><br>The dataset was manually annotated into four sentiment categories, with 1,502 Neutral, 1,196 Negative, 222 Mixed, 
+                and 139 Positive posts. A Social Sciences Professor fluent in Filipino, English, Tagalog, and Cebuano validated the 
+                annotations to ensure linguistic accuracy. Due to the imbalance in sentiment distribution, oversampling was applied to improve model performance.           
+             </p>
+        </div>
+        <div class="col-md-6">
+            <canvas id="sentimentChart" width="300" height="200"></canvas>
+        </div>
+    </div>
+
+    <h3 class="fw-semibold mt-5">Model Information</h3>
+    <p>
+        The model was fine-tuned using a multilingual BERT-based architecture. The best-performing configuration achieved an accuracy of <strong>87.59%</strong>.
+    </p>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Model</th>
+                    <th>Batch Size</th>
+                    <th>Learning Rate</th>
+                    <th>Accuracy</th>
+                    <th>F1 Score</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in model_results %}
+                <tr>
+                    <td>{{ result["Model"] }}</td>
+                    <td>{{ result["Batch Size"] }}</td>
+                    <td>{{ result["Learning Rate"] }}</td>
+                    <td>{{ "%.5f"|format(result["Accuracy"]) }}</td>
+                    <td>{{ "%.5f"|format(result["F1 Score"]) }}</td>
+                    <td>{{ "%.5f"|format(result["Precision"]) }}</td>
+                    <td>{{ "%.5f"|format(result["Recall"]) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('sentimentChart').getContext('2d');
+    var sentimentChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Neutral', 'Negative', 'Mixed', 'Positive'],
+            datasets: [{
+                label: 'Sentiment Count',
+                data: [1502, 1196, 222, 139],
+                backgroundColor: ['#007bff', '#dc3545', '#fd7e14', '#28a745'],
+                borderColor: ['#0056b3', '#a71d2a', '#c0560f', '#1e7e34'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
