@@ -35,7 +35,7 @@ file_ids = {
     "special_tokens_map.json": "1-NqlVZnpIju3FlYh8HSDnRaM2ZbrV0PQ",
     "config.json": "1--WQAmROfPZF22EyU3B2GWBpFb-iijyB"
 }
-MODEL_PATH = "5e5-model"
+MODEL_PATH = "model"
 RESULTS_FILE = "results.json"
 
 ENGLISH_STOPWORDS = set(stopwords.words('english'))
