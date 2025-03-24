@@ -4,6 +4,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const suggestionsBox = document.getElementById("suggestionsBox");
     const recentSearchesList = document.getElementById("recentSearchesList");
 
+    // Create an error message container
+    const errorMessage = document.createElement("div");
+    errorMessage.id = "errorMessage";
+    errorMessage.style.color = "red";
+    errorMessage.style.fontSize = "14px";
+    errorMessage.style.marginTop = "5px";
+    searchInput.parentElement.appendChild(errorMessage); // Add it below the search bar
+
     // Load recent searches from localStorage
     function loadRecentSearches() {
         let searches = JSON.parse(localStorage.getItem("recentSearches")) || [];
@@ -15,90 +23,64 @@ document.addEventListener("DOMContentLoaded", function () {
         suggestionsBox.style.display = searches.length ? "block" : "none";
     }
 
+    // Select a recent search and trigger search
+    window.selectSearch = function (query) {
+        searchInput.value = query;
+        performSearch(query); // Automatically trigger search
+    };
+
+    // Function to validate input
+    function isValidSearch(query) {
+        const regex = /^[A-Za-z\s]+$/; // Allows only letters and spaces
+        return regex.test(query) && query.length > 1; // At least 2 characters
+    }
+
+    // Function to perform search with validation
+    function performSearch(query) {
+        if (!query) return;
+
+        if (!isValidSearch(query)) {
+            searchInput.classList.add("is-invalid"); // Add Bootstrap's invalid class
+            errorMessage.innerText = "That doesn't seem like a valid name. Avoid numbers and symbols.";
+            return;
+        }
+
+        // If valid, remove error styles
+        searchInput.classList.remove("is-invalid");
+        errorMessage.innerText = "";
+
+        saveSearch(query);
+        window.location.href = `/results?keyword=${encodeURIComponent(query)}`;
+    }
+
     // Save search to localStorage
     function saveSearch(query) {
         let searches = JSON.parse(localStorage.getItem("recentSearches")) || [];
         if (!searches.includes(query)) {
             searches.unshift(query); // Add new search at the top
-            if (searches.length > 5) searches.pop(); // Keep only 5 recent searches
+            if (searches.length > 3) searches.pop(); 
             localStorage.setItem("recentSearches", JSON.stringify(searches));
         }
         loadRecentSearches();
     }
 
-    function performSearch() {
-        const keyword = searchInput.value.trim();
-        if (keyword !== "") {
-            saveSearch(keyword);
-            window.location.href = `/results?keyword=${encodeURIComponent(keyword)}`;
-        }
-    }
-
     // Event Listeners for Search
-    searchBtn.addEventListener("click", performSearch);
+    searchBtn.addEventListener("click", function () {
+        performSearch(searchInput.value.trim());
+    });
+
     searchInput.addEventListener("keypress", function (event) {
         if (event.key === "Enter") {
-            performSearch();
+            performSearch(searchInput.value.trim());
         }
     });
 
-        // Ensure sentimentCounts and wordFrequencies are defined
-        if (typeof sentimentCounts !== "undefined" && typeof wordFrequencies !== "undefined") {
-            // Ensure sentimentChart element exists before creating the chart
-            var chartElement = document.getElementById("sentimentChart");
-            if (chartElement) {
-                var ctx = chartElement.getContext("2d");
-                var sentimentChart = new Chart(ctx, {
-                    type: "pie",
-                    data: {
-                        labels: ["Neutral", "Negative", "Positive", "Mixed"],
-                        datasets: [{
-                            data: [
-                                sentimentCounts[0] || 0,  // Neutral
-                                sentimentCounts[1] || 0,  // Negative
-                                sentimentCounts[2] || 0,  // Positive
-                                sentimentCounts[3] || 0   // Mixed
-                            ],
-                            backgroundColor: [
-                                "#007bff",  // Neutral (Blue)
-                                "#ff6384",  // Negative (Red)
-                                "#4bc0c0",  // Positive (Green)
-                                "#6c757d"   // Mixed (Gray)
-                            ],
-                            hoverBackgroundColor: [
-                                "#66b0ff",  // Lighter blue
-                                "#ff8099",  // Lighter red
-                                "#74d4d4",  // Lighter green
-                                "#95a5a6"   // Lighter gray
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: "top",
-                                labels: {
-                                    font: {
-                                        size: 14
-                                    },
-                                    color: "#333"
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-
-        
-    // Select a recent search
-    window.selectSearch = function (query) {
-        searchInput.value = query;
-    };
+    // Remove error message on input change
+    searchInput.addEventListener("input", function () {
+        searchInput.classList.remove("is-invalid");
+        errorMessage.innerText = "";
+    });
 
     // Load recent searches on page load
-    loadRecentSearches();    
+    loadRecentSearches();
 });
