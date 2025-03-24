@@ -1,15 +1,61 @@
 body {
-    padding-top: 70px; /* Adjust this based on your navbar's height */
+    padding-top: 70px;
 }
 .navbar {
-    height: 70px;  /* Fixed navbar height */
-    position:fixed;
+    height: 70px;  
+    position: fixed;
     z-index: 2000 !important; 
  }
+ .navbar-collapse {
+    background-color: white !important;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+
+ .navbar-nav .nav-link.active {
+    color: #007bff !important;
+    font-weight: bold;
+}
+
+.fixed-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.fixed-table th, .fixed-table td {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    text-align: left;
+}
+
+].fixed-table th:nth-child(1), 
+.fixed-table td:nth-child(1) {
+    width: 5%;
+    text-align: center;
+}
+
+.fixed-table th:nth-child(2), 
+.fixed-table td:nth-child(2) {
+    width: 50%;
+}
+
+.fixed-table th:nth-child(3), 
+.fixed-table td:nth-child(3),
+.fixed-table th:nth-child(4), 
+.fixed-table td:nth-child(4) {
+    width: 22.5%; /* Sentiment & Source columns */
+}
 .logo {
     max-height: 200px;  /* Adjust the height */
     width: auto;       /* Maintain aspect ratio */
     object-fit: contain;
+}
+.logo-img {
+    height: 40px; /* Increase logo size */
+    max-height: 90px; /* Prevent it from getting too large */
+    width: auto; /* Maintain aspect ratio */
 }
 @media (max-width: 768px) {
     .logo {
@@ -84,8 +130,17 @@ body {
 .chart-card {
     position: relative;
     z-index: 1000; /* Lower than .suggestions */
+    height: 100% !important; /* Ensures both cards have equal height */
+
+}
+.card-body {
+    position: relative;
 }
 
+canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
 .search-box:focus-within .suggestions {
     opacity: 1;
     transform: translateY(0);
@@ -115,5 +170,3 @@ body {
     background: #f8f9fa;
     border-radius: 15px 15px 0 0;
 }
-
-
