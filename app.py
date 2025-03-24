@@ -58,10 +58,10 @@ CUSTOM_STOPWORDS = {
 } | ENGLISH_STOPWORDS  # Merge both sets
 
 
-# # Download each file
-# for filename, file_id in file_ids.items():
-#     output_path = os.path.join(MODEL_PATH, filename)
-#     gdown.download(f"https://drive.google.com/uc?id={file_id}", output_path, quiet=False)
+# Download files from drive. Once downloaded in the local. Pls make this a comment
+for filename, file_id in file_ids.items():
+    output_path = os.path.join(MODEL_PATH, filename)
+    gdown.download(f"https://drive.google.com/uc?id={file_id}", output_path, quiet=False)
 
 print("Model files downloaded!")
 
